@@ -6,8 +6,8 @@ import { http } from './http'
 
 async function getAllIcons(url: string) {
   const { baseUrl, html } = await page(url)
-  console.log('baseUrl: ', baseUrl)
-  console.log('html: ', html)
+  // console.log('baseUrl: ', baseUrl)
+  // console.log('html: ', html)
 
   const icons = links(html, baseUrl)
   await favicon(icons, baseUrl)
@@ -54,6 +54,15 @@ function getPageUrl(pathname: string) {
 }
 
 export async function handleRequest(request: Request): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: new Headers({
+        'access-control-allow-origin': '*',
+        'access-control-allow-method': '*',
+      }),
+    })
+  }
+
   const url = new URL(request.url)
   if (url.pathname === '/favicon.ico') {
     return fetch('http://apple.com/favicon.ico')
