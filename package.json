@@ -4,12 +4,13 @@
   "description": "获取网站图标",
   "main": "dist/worker.js",
   "scripts": {
+    "dev": "wrangler dev",
     "build": "webpack",
     "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
     "lint": "eslint --max-warnings=0 src && prettier --check '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
     "test": "jest --config jestconfig.json --verbose"
   },
-  "author": "author",
+  "author": "@github:y80",
   "license": "MIT OR Apache-2.0",
   "eslintConfig": {
     "root": true,

@@ -30,7 +30,7 @@ export default function links(html: string, baseUrl: string): Icon[] {
   linkTags.forEach((linkTag) => {
     // 当前 link 标签的 rel 值不包含 icon
     if (!/rel="[ \w-]*?icon[ \w-]*?"/gi.test(linkTag)) return
-    console.log(linkTag)
+    // console.log(linkTag)
     // 当前 link 标签的 href 值不是有效值
     if (!/href="(.{2,}?)"/i.test(linkTag)) return
     const src = RegExp.$1

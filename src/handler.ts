@@ -7,6 +7,7 @@ import { http } from './http'
 async function getAllIcons(url: string) {
   const { baseUrl, html } = await page(url)
   console.log('baseUrl: ', baseUrl)
+  console.log('html: ', html)
 
   const icons = links(html, baseUrl)
   await favicon(icons, baseUrl)
@@ -36,6 +37,10 @@ async function getAllIcons(url: string) {
 // let url = 'gitee.com'
 // let url = 'nav.al'
 // let url = 'qq.com'
+// let url = '52pojie.cn'
+// let url = 'unsplash.com'
+// let url = '423down.com'
+// let url = 'iao.su'
 
 // getAllIcons(url)
 
@@ -54,14 +59,20 @@ export async function handleRequest(request: Request): Promise<Response> {
     return fetch('http://apple.com/favicon.ico')
   }
 
+  const headers = new Headers()
   const icons = await getAllIcons(getPageUrl(url.pathname))
+  if (url.searchParams.get('json') === 'true') {
+    headers.append('content-type', 'application/json')
+    return new Response(JSON.stringify(icons), { headers })
+  }
+
   const targetIcon = icons[0]
   const iconRsp = await http.get(targetIcon.src)
-  const headers = new Headers({
-    'access-control-allow-origin': '*',
-    'x-src': targetIcon.src,
-    'content-type': iconRsp.headers.get('content-type') || targetIcon.type,
-  })
+  headers.append('x-src', targetIcon.src)
+  headers.append(
+    'content-type',
+    iconRsp.headers.get('content-type') || targetIcon.type,
+  )
   const contentLength = iconRsp.headers.get('content-length')
   if (contentLength) {
     headers.set('content-length', contentLength)
