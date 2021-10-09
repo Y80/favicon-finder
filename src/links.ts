@@ -7,7 +7,7 @@ function getType(link: string, iconSrc: string) {
 
   for (let idx = 0; idx < iconTypeMap.length; idx++) {
     const { extension, type } = iconTypeMap[idx]
-    if (iconSrc.includes(extension)) return type
+    if (iconSrc.includes(extension) || iconSrc.includes(type)) return type
   }
 
   return ICON_TYPE['.ico']
@@ -38,7 +38,7 @@ export default function links(html: string, baseUrl: string): Icon[] {
     if (icons.map((icon) => icon.src).includes(src)) return
 
     icons.push({
-      src: new URL(src, baseUrl).href,
+      src: /^data:/.test(src) ? src : new URL(src, baseUrl).href,
       type: getType(linkTag, src),
       sizes: getSizes(linkTag, src),
     })

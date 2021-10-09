@@ -3,6 +3,7 @@ import links from './links'
 import favicon from './favicon'
 import sortIcons from './sortIcons'
 import { http } from './http'
+import { Icon } from './common'
 
 async function getAllIcons(url: string) {
   const { baseUrl, html } = await page(url)
@@ -41,6 +42,7 @@ async function getAllIcons(url: string) {
 // let url = 'unsplash.com'
 // let url = '423down.com'
 // let url = 'iao.su'
+// let url = 'pipedream.com' // icon 为 Data URI
 
 // getAllIcons(url)
 
@@ -51,6 +53,37 @@ function getPageUrl(pathname: string) {
   }
 
   return new URL(`http://${domain}/`).href
+}
+
+async function getIconResponse({ src, type }: Icon) {
+  const headers = new Headers()
+  headers.append('content-type', type)
+  // 处理资源为 data uri 的情况
+  if (src.startsWith('data:')) {
+    type = src.match(/^data:(.+?);/)?.pop() as string
+    headers.set('content-type', type)
+    const decodedStr = atob(src.split(',').pop() as string)
+    const u8Arr = new Uint8Array(decodedStr.length)
+    let idx = 0
+    while (idx < decodedStr.length) {
+      u8Arr[idx] = decodedStr.charCodeAt(idx)
+      idx += 1
+    }
+    headers.append('content-length', decodedStr.length.toString())
+
+    return new Response(new Blob([u8Arr], { type }), { headers })
+  }
+  const iconRsp = await http.get(src)
+  headers.append('x-src', src)
+  iconRsp.headers.get('content-type') &&
+    headers.set('content-type', iconRsp.headers.get('content-type') as string)
+  iconRsp.headers.get('content-length') &&
+    headers.append(
+      'content-length',
+      iconRsp.headers.get('content-length') as string,
+    )
+
+  return new Response(await iconRsp.blob(), { headers })
 }
 
 export async function handleRequest(request: Request): Promise<Response> {
@@ -75,17 +108,5 @@ export async function handleRequest(request: Request): Promise<Response> {
     return new Response(JSON.stringify(icons), { headers })
   }
 
-  const targetIcon = icons[0]
-  const iconRsp = await http.get(targetIcon.src)
-  headers.append('x-src', targetIcon.src)
-  headers.append(
-    'content-type',
-    iconRsp.headers.get('content-type') || targetIcon.type,
-  )
-  const contentLength = iconRsp.headers.get('content-length')
-  if (contentLength) {
-    headers.set('content-length', contentLength)
-  }
-
-  return new Response(await iconRsp.blob(), { headers })
+  return await getIconResponse(icons[0])
 }
